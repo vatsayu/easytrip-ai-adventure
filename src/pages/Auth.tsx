@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Plane, Mail, Lock, User, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { AnimatedPage } from "@/components/AnimatedPage";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -36,6 +37,7 @@ const Auth = () => {
   };
 
   return (
+    <AnimatedPage>
     <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
@@ -229,6 +231,7 @@ const Auth = () => {
         </div>
       </div>
     </div>
+    </AnimatedPage>
   );
 };
 
