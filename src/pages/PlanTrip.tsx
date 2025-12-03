@@ -23,6 +23,7 @@ import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { AnimatedPage } from "@/components/AnimatedPage";
 
 const budgetOptions = [
   { value: "budget", label: "Budget-Friendly ($)", description: "Hostels, street food, public transport" },
@@ -126,8 +127,9 @@ const PlanTrip = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <AnimatedPage>
+      <div className="min-h-screen bg-background">
+        <Navbar />
 
       <main className="pt-24 pb-20">
         <div className="container mx-auto px-4 md:px-6">
@@ -354,10 +356,11 @@ const PlanTrip = () => {
             </div>
           </div>
         </div>
-      </main>
+        </main>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </AnimatedPage>
   );
 };
 
