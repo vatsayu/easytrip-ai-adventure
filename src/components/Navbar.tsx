@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Plane } from "lucide-react";
+import { Menu, X, Plane, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuth } from "@/hooks/useAuth";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   const navLinks = [
     { href: "#how-it-works", label: "How it Works" },
@@ -39,21 +41,45 @@ const Navbar = () => {
                 {link.label}
               </a>
             ))}
+            {user && (
+              <Link
+                to="/my-trips"
+                className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
+              >
+                My Trips
+              </Link>
+            )}
           </div>
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-3">
             <ThemeToggle />
-            <Link to="/auth">
-              <Button variant="ghost" size="sm">
-                Sign In
-              </Button>
-            </Link>
-            <Link to="/plan">
-              <Button variant="hero" size="sm">
-                Start Planning
-              </Button>
-            </Link>
+            {user ? (
+              <>
+                <Link to="/plan">
+                  <Button variant="hero" size="sm">
+                    Plan Trip
+                  </Button>
+                </Link>
+                <Button variant="ghost" size="sm" onClick={signOut}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="ghost" size="sm">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/plan">
+                  <Button variant="hero" size="sm">
+                    Start Planning
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -82,17 +108,42 @@ const Navbar = () => {
                   {link.label}
                 </a>
               ))}
+              {user && (
+                <Link
+                  to="/my-trips"
+                  className="px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg transition-all"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  My Trips
+                </Link>
+              )}
               <div className="flex flex-col gap-2 mt-4 px-4">
-                <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
-                  <Button variant="outline" className="w-full">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link to="/plan" onClick={() => setIsMenuOpen(false)}>
-                  <Button variant="hero" className="w-full">
-                    Start Planning
-                  </Button>
-                </Link>
+                {user ? (
+                  <>
+                    <Link to="/plan" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="hero" className="w-full">
+                        Plan Trip
+                      </Button>
+                    </Link>
+                    <Button variant="outline" className="w-full" onClick={() => { signOut(); setIsMenuOpen(false); }}>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="outline" className="w-full">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link to="/plan" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="hero" className="w-full">
+                        Start Planning
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>

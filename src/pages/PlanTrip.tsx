@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,16 +11,18 @@ import {
 } from "@/components/ui/select";
 import {
   Plane,
-  ArrowLeft,
   MapPin,
   Calendar,
   Users,
   Wallet,
   Sparkles,
   Loader2,
+  Save,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AnimatedPage } from "@/components/AnimatedPage";
@@ -42,7 +44,10 @@ const travelStyleOptions = [
 
 const PlanTrip = () => {
   const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
@@ -54,6 +59,17 @@ const PlanTrip = () => {
     travelStyle: "",
     interests: "",
   });
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to plan and save your trips.",
+      });
+      navigate("/auth");
+    }
+  }, [user, authLoading, navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,8 +130,53 @@ const PlanTrip = () => {
 
     toast({
       title: "Itinerary Generated!",
-      description: "Your personalized travel plan is ready.",
+      description: "Your personalized travel plan is ready. Click 'Save Trip' to keep it.",
     });
+  };
+
+  const saveTrip = async () => {
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to save your trip.",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const { error } = await supabase.from("trips").insert({
+        user_id: user.id,
+        destination: formData.destination,
+        start_date: formData.startDate,
+        end_date: formData.endDate,
+        travelers: parseInt(formData.travelers),
+        budget: formData.budget || null,
+        travel_style: formData.travelStyle || null,
+        interests: formData.interests ? formData.interests.split(",").map(i => i.trim()) : null,
+        itinerary: generatedPlan,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Trip saved!",
+        description: "Your trip has been saved to your account.",
+      });
+
+      navigate("/my-trips");
+    } catch (error: any) {
+      toast({
+        title: "Error saving trip",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const calculateDays = (start: string, end: string) => {
@@ -125,6 +186,16 @@ const PlanTrip = () => {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays + 1;
   };
+
+  if (authLoading) {
+    return (
+      <AnimatedPage>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </AnimatedPage>
+    );
+  }
 
   return (
     <AnimatedPage>
@@ -335,10 +406,30 @@ const PlanTrip = () => {
                   </p>
                 </div>
               ) : generatedPlan ? (
-                <div className="prose prose-sm max-w-none">
-                  <div className="whitespace-pre-wrap text-foreground/90 leading-relaxed">
-                    {generatedPlan}
+                <div>
+                  <div className="prose prose-sm max-w-none mb-6">
+                    <div className="whitespace-pre-wrap text-foreground/90 leading-relaxed max-h-96 overflow-y-auto">
+                      {generatedPlan}
+                    </div>
                   </div>
+                  <Button
+                    onClick={saveTrip}
+                    variant="hero"
+                    className="w-full"
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-5 h-5" />
+                        Save Trip
+                      </>
+                    )}
+                  </Button>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
