@@ -18,10 +18,12 @@ import {
   Sparkles,
   Loader2,
   Save,
+  Coins,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useCredits } from "@/hooks/useCredits";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -45,10 +47,12 @@ const travelStyleOptions = [
 const PlanTrip = () => {
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
+  const { credits, loading: creditsLoading, deductCredit } = useCredits();
   const navigate = useNavigate();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState<string | null>(null);
+  const [destinationImage, setDestinationImage] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     destination: "",
@@ -83,10 +87,27 @@ const PlanTrip = () => {
       return;
     }
 
+    // Check credits
+    if (credits === null || credits <= 0) {
+      toast({
+        title: "No Credits",
+        description: "You have no credits left. Please purchase more to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGenerating(true);
     setGeneratedPlan(null);
+    setDestinationImage(null);
 
     try {
+      // Deduct credit first
+      const deducted = await deductCredit();
+      if (!deducted) {
+        throw new Error("Failed to deduct credit");
+      }
+
       const response = await supabase.functions.invoke("generate-itinerary", {
         body: {
           destination: formData.destination,
@@ -109,6 +130,9 @@ const PlanTrip = () => {
       }
 
       setGeneratedPlan(data.itinerary);
+      if (data.destinationImage) {
+        setDestinationImage(data.destinationImage);
+      }
       toast({
         title: "Itinerary Generated!",
         description: "Your personalized travel plan is ready. Click 'Save Trip' to keep it.",
@@ -147,7 +171,7 @@ const PlanTrip = () => {
         budget: formData.budget || null,
         travel_style: formData.travelStyle || null,
         interests: formData.interests ? formData.interests.split(",").map(i => i.trim()) : null,
-        itinerary: generatedPlan,
+        itinerary: { text: generatedPlan, image: destinationImage },
       });
 
       if (error) throw error;
@@ -169,15 +193,7 @@ const PlanTrip = () => {
     }
   };
 
-  const calculateDays = (start: string, end: string) => {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays + 1;
-  };
-
-  if (authLoading) {
+  if (authLoading || creditsLoading) {
     return (
       <AnimatedPage>
         <div className="min-h-screen bg-background flex items-center justify-center">
@@ -203,9 +219,15 @@ const PlanTrip = () => {
             <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
               Plan Your Perfect Trip with EasyTrip AI
             </h1>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-lg text-muted-foreground mb-4">
               Tell us about your dream destination and let our AI create a personalized itinerary just for you.
             </p>
+            
+            {/* Credits Display */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary text-secondary-foreground font-medium">
+              <Coins className="w-4 h-4 text-primary" />
+              <span>Credits: {credits ?? 0}</span>
+            </div>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
@@ -362,17 +384,19 @@ const PlanTrip = () => {
                   variant="hero"
                   className="w-full"
                   size="xl"
-                  disabled={isGenerating}
+                  disabled={isGenerating || (credits !== null && credits <= 0)}
                 >
                   {isGenerating ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
                       Generating Your Itinerary...
                     </>
+                  ) : (credits !== null && credits <= 0) ? (
+                    <>No Credits Available</>
                   ) : (
                     <>
                       <Sparkles className="w-5 h-5" />
-                      Generate My Trip Plan
+                      Generate My Trip Plan (1 Credit)
                     </>
                   )}
                 </Button>
@@ -397,6 +421,15 @@ const PlanTrip = () => {
                 </div>
               ) : generatedPlan ? (
                 <div>
+                  {destinationImage && (
+                    <div className="mb-6 rounded-xl overflow-hidden">
+                      <img
+                        src={destinationImage}
+                        alt={`${formData.destination} destination`}
+                        className="w-full h-48 object-cover"
+                      />
+                    </div>
+                  )}
                   <div className="prose prose-sm max-w-none mb-6">
                     <div className="whitespace-pre-wrap text-foreground/90 leading-relaxed max-h-96 overflow-y-auto">
                       {generatedPlan}
@@ -430,7 +463,7 @@ const PlanTrip = () => {
                     Fill in the form and click "Generate" to see your personalized travel plan.
                   </p>
                   <p className="text-sm text-muted-foreground/70">
-                    You have 2 free credits to get started!
+                    You have {credits ?? 0} free credits to get started!
                   </p>
                 </div>
               )}

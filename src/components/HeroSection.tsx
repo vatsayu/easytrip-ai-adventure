@@ -34,7 +34,7 @@ const HeroSection = () => {
               <Link to="/plan">
                 <Button variant="hero" size="xl" className="group">
                   <Sparkles className="w-5 h-5" />
-                  Try Now - 2 Free Credits
+                  Try Now - 3 Free Credits
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
@@ -51,7 +51,7 @@ const HeroSection = () => {
               <img
                 src={heroBalloon}
                 alt="Hot air balloon floating in the sky - EasyTrip travel planning"
-                className="w-full max-w-lg lg:max-w-xl drop-shadow-2xl"
+                className="w-full max-w-lg lg:max-w-xl drop-shadow-2xl rounded-3xl"
               />
             </div>
 
