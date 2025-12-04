@@ -58,7 +58,6 @@ const PlanTrip = () => {
     interests: "",
   });
 
-  // Redirect to auth if not logged in
   useEffect(() => {
     if (!authLoading && !user) {
       toast({
@@ -94,113 +93,66 @@ const PlanTrip = () => {
     setIsGenerating(true);
     setGeneratedPlan(null);
 
-    // Generate itinerary (mock for now)
-    const mockPlan = {
-      overview: `Your ${formData.destination} Adventure`,
-      duration: calculateDays(formData.startDate, formData.endDate),
-      days: [
-        {
-          day: 1,
-          title: "Arrival & Exploration",
-          activities: [
-            `Arrive at ${formData.destination}`,
-            "Check into your accommodation",
-            "Evening walk to explore the neighborhood",
-            "Welcome dinner at a local restaurant",
-          ],
+    try {
+      // Call AI to generate itinerary
+      const { data, error } = await supabase.functions.invoke("generate-itinerary", {
+        body: {
+          destination: formData.destination,
+          startDate: formData.startDate,
+          endDate: formData.endDate,
+          travelers: formData.travelers,
+          budget: formData.budget,
+          travelStyle: formData.travelStyle,
+          interests: formData.interests,
         },
-        {
-          day: 2,
-          title: "Iconic Landmarks",
-          activities: [
-            "Early morning start",
-            "Visit top attractions",
-            "Coffee break at a scenic café",
-            "Cultural experience in the afternoon",
-            "Evening entertainment",
-          ],
-        },
-        {
-          day: 3,
-          title: "Hidden Gems",
-          activities: [
-            "Off-the-beaten-path exploration",
-            "Local food tour",
-            "Shopping at local markets",
-            "Sunset viewpoint",
-          ],
-        },
-      ],
-    };
+      });
 
-    // Save trip to database
-    const interests = formData.interests ? formData.interests.split(",").map(i => i.trim()) : [];
-    
-    const { error } = await supabase.from("trips").insert({
-      user_id: user.id,
-      destination: formData.destination,
-      start_date: formData.startDate,
-      end_date: formData.endDate,
-      travelers: parseInt(formData.travelers),
-      budget: formData.budget || null,
-      travel_style: formData.travelStyle || null,
-      interests: interests.length > 0 ? interests : null,
-      itinerary: mockPlan,
-    });
+      if (error) {
+        throw new Error(error.message);
+      }
 
-    if (error) {
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      const itineraryText = data.itinerary;
+
+      // Save trip to database
+      const interests = formData.interests ? formData.interests.split(",").map(i => i.trim()) : [];
+      
+      const { error: dbError } = await supabase.from("trips").insert({
+        user_id: user.id,
+        destination: formData.destination,
+        start_date: formData.startDate,
+        end_date: formData.endDate,
+        travelers: parseInt(formData.travelers),
+        budget: formData.budget || null,
+        travel_style: formData.travelStyle || null,
+        interests: interests.length > 0 ? interests : null,
+        itinerary: { content: itineraryText, metadata: data.metadata },
+      });
+
+      if (dbError) {
+        console.error("Error saving trip:", dbError);
+        // Still show the itinerary even if saving fails
+      }
+
+      setGeneratedPlan(itineraryText);
+
       toast({
-        title: "Error saving trip",
-        description: error.message,
+        title: "Trip Generated!",
+        description: "Your AI-powered travel plan is ready and saved.",
+      });
+    } catch (error) {
+      console.error("Error generating itinerary:", error);
+      toast({
+        title: "Generation Failed",
+        description: error instanceof Error ? error.message : "Failed to generate itinerary. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setIsGenerating(false);
-      return;
     }
-
-    const displayPlan = `
-# 🌍 Your ${formData.destination} Adventure
-
-## Trip Overview
-- **Destination:** ${formData.destination}
-- **Duration:** ${calculateDays(formData.startDate, formData.endDate)} days
-- **Travelers:** ${formData.travelers} people
-- **Budget:** ${budgetOptions.find(b => b.value === formData.budget)?.label || 'Flexible'}
-- **Style:** ${travelStyleOptions.find(s => s.value === formData.travelStyle)?.label || 'Mixed'}
-
----
-
-## Day 1: Arrival & Exploration
-- 🛬 Arrive at ${formData.destination}
-- 🏨 Check into your accommodation
-- 🚶 Evening walk to explore the neighborhood
-- 🍽️ Welcome dinner at a local restaurant
-
-## Day 2: Iconic Landmarks
-- 🌅 Early morning start
-- 📸 Visit top attractions
-- ☕ Coffee break at a scenic café
-- 🎭 Cultural experience in the afternoon
-- 🌙 Evening entertainment
-
-## Day 3: Hidden Gems
-- 🗺️ Off-the-beaten-path exploration
-- 🍜 Local food tour
-- 🛍️ Shopping at local markets
-- 🌆 Sunset viewpoint
-
----
-
-*Your trip has been saved! You can view all your trips in your dashboard.*
-    `;
-
-    setGeneratedPlan(displayPlan);
-    setIsGenerating(false);
-
-    toast({
-      title: "Trip Saved!",
-      description: "Your personalized travel plan has been saved.",
-    });
   };
 
   const calculateDays = (start: string, end: string) => {
@@ -226,7 +178,6 @@ const PlanTrip = () => {
 
         <main className="pt-24 pb-20">
           <div className="container mx-auto px-4 md:px-6">
-            {/* Header */}
             <div className="max-w-3xl mx-auto text-center mb-12">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
                 <Sparkles className="w-4 h-4" />
@@ -241,10 +192,8 @@ const PlanTrip = () => {
             </div>
 
             <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-              {/* Form */}
               <div className="bg-card rounded-2xl shadow-card p-8 border border-border/50">
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Destination */}
                   <div className="space-y-2">
                     <Label htmlFor="destination" className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-primary" />
@@ -262,7 +211,6 @@ const PlanTrip = () => {
                     />
                   </div>
 
-                  {/* Dates */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="startDate" className="flex items-center gap-2">
@@ -295,7 +243,6 @@ const PlanTrip = () => {
                     </div>
                   </div>
 
-                  {/* Travelers */}
                   <div className="space-y-2">
                     <Label htmlFor="travelers" className="flex items-center gap-2">
                       <Users className="w-4 h-4 text-primary" />
@@ -320,7 +267,6 @@ const PlanTrip = () => {
                     </Select>
                   </div>
 
-                  {/* Budget */}
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
                       <Wallet className="w-4 h-4 text-primary" />
@@ -350,7 +296,6 @@ const PlanTrip = () => {
                     </Select>
                   </div>
 
-                  {/* Travel Style */}
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-primary" />
@@ -375,7 +320,6 @@ const PlanTrip = () => {
                     </Select>
                   </div>
 
-                  {/* Interests */}
                   <div className="space-y-2">
                     <Label htmlFor="interests">Special Interests (Optional)</Label>
                     <Input
@@ -399,7 +343,7 @@ const PlanTrip = () => {
                     {isGenerating ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        Generating Your Itinerary...
+                        AI is crafting your itinerary...
                       </>
                     ) : (
                       <>
@@ -411,11 +355,10 @@ const PlanTrip = () => {
                 </form>
               </div>
 
-              {/* Preview/Result */}
-              <div className="bg-card rounded-2xl shadow-card p-8 border border-border/50">
-                <h3 className="font-display text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+              <div className="bg-card rounded-2xl shadow-card p-8 border border-border/50 max-h-[800px] overflow-y-auto">
+                <h3 className="font-display text-xl font-bold text-foreground mb-6 flex items-center gap-2 sticky top-0 bg-card pb-4">
                   <Plane className="w-5 h-5 text-primary" />
-                  Your Itinerary Preview
+                  Your Itinerary
                 </h3>
 
                 {isGenerating ? (
@@ -426,9 +369,12 @@ const PlanTrip = () => {
                     <p className="text-muted-foreground text-center">
                       Our AI is crafting your perfect itinerary...
                     </p>
+                    <p className="text-sm text-muted-foreground/70 mt-2">
+                      This may take a moment
+                    </p>
                   </div>
                 ) : generatedPlan ? (
-                  <div className="prose prose-sm max-w-none">
+                  <div className="prose prose-sm max-w-none dark:prose-invert">
                     <div className="whitespace-pre-wrap text-foreground/90 leading-relaxed">
                       {generatedPlan}
                     </div>
@@ -439,10 +385,10 @@ const PlanTrip = () => {
                       <MapPin className="w-10 h-10 text-muted-foreground" />
                     </div>
                     <p className="text-muted-foreground mb-2">
-                      Fill in the form and click "Generate" to see your personalized travel plan.
+                      Fill in the form and click "Generate" to see your AI-powered travel plan.
                     </p>
                     <p className="text-sm text-muted-foreground/70">
-                      Your trips will be saved automatically!
+                      Powered by advanced AI for personalized recommendations
                     </p>
                   </div>
                 )}
