@@ -1,21 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Plane, LogOut, User } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, Plane } from "lucide-react";
+import { Link } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { useAuth } from "@/hooks/useAuth";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
 
   const navLinks = [
     { href: "#how-it-works", label: "How it Works" },
@@ -23,11 +13,6 @@ const Navbar = () => {
     { href: "#community", label: "Community Plans" },
     { href: "#pricing", label: "Pricing" },
   ];
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/");
-  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
@@ -59,41 +44,16 @@ const Navbar = () => {
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-3">
             <ThemeToggle />
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="gap-2">
-                    <User className="w-4 h-4" />
-                    {user.email?.split("@")[0]}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link to="/plan" className="cursor-pointer">
-                      Plan a Trip
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <>
-                <Link to="/auth">
-                  <Button variant="ghost" size="sm">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link to="/plan">
-                  <Button variant="hero" size="sm">
-                    Start Planning
-                  </Button>
-                </Link>
-              </>
-            )}
+            <Link to="/auth">
+              <Button variant="ghost" size="sm">
+                Sign In
+              </Button>
+            </Link>
+            <Link to="/plan">
+              <Button variant="hero" size="sm">
+                Start Planning
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -123,35 +83,16 @@ const Navbar = () => {
                 </a>
               ))}
               <div className="flex flex-col gap-2 mt-4 px-4">
-                {user ? (
-                  <>
-                    <p className="text-sm text-muted-foreground px-2 py-1">
-                      Signed in as {user.email}
-                    </p>
-                    <Link to="/plan" onClick={() => setIsMenuOpen(false)}>
-                      <Button variant="hero" className="w-full">
-                        Plan a Trip
-                      </Button>
-                    </Link>
-                    <Button variant="outline" className="w-full" onClick={handleSignOut}>
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Sign Out
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
-                      <Button variant="outline" className="w-full">
-                        Sign In
-                      </Button>
-                    </Link>
-                    <Link to="/plan" onClick={() => setIsMenuOpen(false)}>
-                      <Button variant="hero" className="w-full">
-                        Start Planning
-                      </Button>
-                    </Link>
-                  </>
-                )}
+                <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                  <Button variant="outline" className="w-full">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/plan" onClick={() => setIsMenuOpen(false)}>
+                  <Button variant="hero" className="w-full">
+                    Start Planning
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

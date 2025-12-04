@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import {
   Plane,
+  ArrowLeft,
   MapPin,
   Calendar,
   Users,
@@ -18,13 +19,11 @@ import {
   Sparkles,
   Loader2,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AnimatedPage } from "@/components/AnimatedPage";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
 
 const budgetOptions = [
   { value: "budget", label: "Budget-Friendly ($)", description: "Hostels, street food, public transport" },
@@ -43,8 +42,6 @@ const travelStyleOptions = [
 
 const PlanTrip = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState<string | null>(null);
 
@@ -58,16 +55,6 @@ const PlanTrip = () => {
     interests: "",
   });
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to plan your trip.",
-      });
-      navigate("/auth");
-    }
-  }, [user, authLoading, navigate, toast]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -80,79 +67,55 @@ const PlanTrip = () => {
       return;
     }
 
-    if (!user) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to save your trip.",
-        variant: "destructive",
-      });
-      navigate("/auth");
-      return;
-    }
-
     setIsGenerating(true);
     setGeneratedPlan(null);
 
-    try {
-      // Call AI to generate itinerary
-      const { data, error } = await supabase.functions.invoke("generate-itinerary", {
-        body: {
-          destination: formData.destination,
-          startDate: formData.startDate,
-          endDate: formData.endDate,
-          travelers: formData.travelers,
-          budget: formData.budget,
-          travelStyle: formData.travelStyle,
-          interests: formData.interests,
-        },
-      });
+    // Simulate AI generation
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
-      if (error) {
-        throw new Error(error.message);
-      }
+    const mockPlan = `
+# 🌍 Your ${formData.destination} Adventure
 
-      if (data.error) {
-        throw new Error(data.error);
-      }
+## Trip Overview
+- **Destination:** ${formData.destination}
+- **Duration:** ${calculateDays(formData.startDate, formData.endDate)} days
+- **Travelers:** ${formData.travelers} people
+- **Budget:** ${budgetOptions.find(b => b.value === formData.budget)?.label || 'Flexible'}
+- **Style:** ${travelStyleOptions.find(s => s.value === formData.travelStyle)?.label || 'Mixed'}
 
-      const itineraryText = data.itinerary;
+---
 
-      // Save trip to database
-      const interests = formData.interests ? formData.interests.split(",").map(i => i.trim()) : [];
-      
-      const { error: dbError } = await supabase.from("trips").insert({
-        user_id: user.id,
-        destination: formData.destination,
-        start_date: formData.startDate,
-        end_date: formData.endDate,
-        travelers: parseInt(formData.travelers),
-        budget: formData.budget || null,
-        travel_style: formData.travelStyle || null,
-        interests: interests.length > 0 ? interests : null,
-        itinerary: { content: itineraryText, metadata: data.metadata },
-      });
+## Day 1: Arrival & Exploration
+- 🛬 Arrive at ${formData.destination}
+- 🏨 Check into your accommodation
+- 🚶 Evening walk to explore the neighborhood
+- 🍽️ Welcome dinner at a local restaurant
 
-      if (dbError) {
-        console.error("Error saving trip:", dbError);
-        // Still show the itinerary even if saving fails
-      }
+## Day 2: Iconic Landmarks
+- 🌅 Early morning start
+- 📸 Visit top attractions
+- ☕ Coffee break at a scenic café
+- 🎭 Cultural experience in the afternoon
+- 🌙 Evening entertainment
 
-      setGeneratedPlan(itineraryText);
+## Day 3: Hidden Gems
+- 🗺️ Off-the-beaten-path exploration
+- 🍜 Local food tour
+- 🛍️ Shopping at local markets
+- 🌆 Sunset viewpoint
 
-      toast({
-        title: "Trip Generated!",
-        description: "Your AI-powered travel plan is ready and saved.",
-      });
-    } catch (error) {
-      console.error("Error generating itinerary:", error);
-      toast({
-        title: "Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate itinerary. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGenerating(false);
-    }
+---
+
+*This is a preview. Connect to our AI service for a complete personalized itinerary with booking links, maps, and real-time recommendations.*
+    `;
+
+    setGeneratedPlan(mockPlan);
+    setIsGenerating(false);
+
+    toast({
+      title: "Itinerary Generated!",
+      description: "Your personalized travel plan is ready.",
+    });
   };
 
   const calculateDays = (start: string, end: string) => {
@@ -163,238 +126,236 @@ const PlanTrip = () => {
     return diffDays + 1;
   };
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
     <AnimatedPage>
       <div className="min-h-screen bg-background">
         <Navbar />
 
-        <main className="pt-24 pb-20">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="max-w-3xl mx-auto text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-                <Sparkles className="w-4 h-4" />
-                AI Trip Planner
-              </div>
-              <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Plan Your Perfect Trip with EasyTrip AI
-              </h1>
-              <p className="text-lg text-muted-foreground">
-                Tell us about your dream destination and let our AI create a personalized itinerary just for you.
-              </p>
+      <main className="pt-24 pb-20">
+        <div className="container mx-auto px-4 md:px-6">
+          {/* Header */}
+          <div className="max-w-3xl mx-auto text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+              <Sparkles className="w-4 h-4" />
+              AI Trip Planner
             </div>
+            <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Plan Your Perfect Trip with EasyTrip AI
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              Tell us about your dream destination and let our AI create a personalized itinerary just for you.
+            </p>
+          </div>
 
-            <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-              <div className="bg-card rounded-2xl shadow-card p-8 border border-border/50">
-                <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+            {/* Form */}
+            <div className="bg-card rounded-2xl shadow-card p-8 border border-border/50">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Destination */}
+                <div className="space-y-2">
+                  <Label htmlFor="destination" className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    Where do you want to go? *
+                  </Label>
+                  <Input
+                    id="destination"
+                    placeholder="e.g., Tokyo, Japan or Paris, France"
+                    className="h-12"
+                    value={formData.destination}
+                    onChange={(e) =>
+                      setFormData({ ...formData, destination: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+
+                {/* Dates */}
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="destination" className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-primary" />
-                      Where do you want to go? *
+                    <Label htmlFor="startDate" className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-primary" />
+                      Start Date *
                     </Label>
                     <Input
-                      id="destination"
-                      placeholder="e.g., Tokyo, Japan or Paris, France"
+                      id="startDate"
+                      type="date"
                       className="h-12"
-                      value={formData.destination}
+                      value={formData.startDate}
                       onChange={(e) =>
-                        setFormData({ ...formData, destination: e.target.value })
+                        setFormData({ ...formData, startDate: e.target.value })
                       }
                       required
                     />
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="startDate" className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-primary" />
-                        Start Date *
-                      </Label>
-                      <Input
-                        id="startDate"
-                        type="date"
-                        className="h-12"
-                        value={formData.startDate}
-                        onChange={(e) =>
-                          setFormData({ ...formData, startDate: e.target.value })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="endDate">End Date *</Label>
-                      <Input
-                        id="endDate"
-                        type="date"
-                        className="h-12"
-                        value={formData.endDate}
-                        onChange={(e) =>
-                          setFormData({ ...formData, endDate: e.target.value })
-                        }
-                        required
-                      />
-                    </div>
-                  </div>
-
                   <div className="space-y-2">
-                    <Label htmlFor="travelers" className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-primary" />
-                      Number of Travelers
-                    </Label>
-                    <Select
-                      value={formData.travelers}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, travelers: value })
-                      }
-                    >
-                      <SelectTrigger className="h-12">
-                        <SelectValue placeholder="Select travelers" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                          <SelectItem key={num} value={num.toString()}>
-                            {num} {num === 1 ? "Traveler" : "Travelers"}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-2">
-                      <Wallet className="w-4 h-4 text-primary" />
-                      Budget Range
-                    </Label>
-                    <Select
-                      value={formData.budget}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, budget: value })
-                      }
-                    >
-                      <SelectTrigger className="h-12">
-                        <SelectValue placeholder="Select your budget" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {budgetOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            <div>
-                              <div className="font-medium">{option.label}</div>
-                              <div className="text-xs text-muted-foreground">
-                                {option.description}
-                              </div>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-primary" />
-                      Travel Style
-                    </Label>
-                    <Select
-                      value={formData.travelStyle}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, travelStyle: value })
-                      }
-                    >
-                      <SelectTrigger className="h-12">
-                        <SelectValue placeholder="Select your travel style" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {travelStyleOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="interests">Special Interests (Optional)</Label>
+                    <Label htmlFor="endDate">End Date *</Label>
                     <Input
-                      id="interests"
-                      placeholder="e.g., photography, hiking, museums, local cuisine"
+                      id="endDate"
+                      type="date"
                       className="h-12"
-                      value={formData.interests}
+                      value={formData.endDate}
                       onChange={(e) =>
-                        setFormData({ ...formData, interests: e.target.value })
+                        setFormData({ ...formData, endDate: e.target.value })
                       }
+                      required
                     />
                   </div>
+                </div>
 
-                  <Button
-                    type="submit"
-                    variant="hero"
-                    className="w-full"
-                    size="xl"
-                    disabled={isGenerating}
+                {/* Travelers */}
+                <div className="space-y-2">
+                  <Label htmlFor="travelers" className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-primary" />
+                    Number of Travelers
+                  </Label>
+                  <Select
+                    value={formData.travelers}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, travelers: value })
+                    }
                   >
-                    {isGenerating ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        AI is crafting your itinerary...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-5 h-5" />
-                        Generate My Trip Plan
-                      </>
-                    )}
-                  </Button>
-                </form>
-              </div>
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="Select travelers" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                        <SelectItem key={num} value={num.toString()}>
+                          {num} {num === 1 ? "Traveler" : "Travelers"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="bg-card rounded-2xl shadow-card p-8 border border-border/50 max-h-[800px] overflow-y-auto">
-                <h3 className="font-display text-xl font-bold text-foreground mb-6 flex items-center gap-2 sticky top-0 bg-card pb-4">
-                  <Plane className="w-5 h-5 text-primary" />
-                  Your Itinerary
-                </h3>
+                {/* Budget */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Wallet className="w-4 h-4 text-primary" />
+                    Budget Range
+                  </Label>
+                  <Select
+                    value={formData.budget}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, budget: value })
+                    }
+                  >
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="Select your budget" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {budgetOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          <div>
+                            <div className="font-medium">{option.label}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {option.description}
+                            </div>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                {isGenerating ? (
-                  <div className="flex flex-col items-center justify-center py-20">
-                    <div className="w-16 h-16 rounded-full gradient-primary flex items-center justify-center mb-6 animate-pulse">
-                      <Sparkles className="w-8 h-8 text-primary-foreground" />
-                    </div>
-                    <p className="text-muted-foreground text-center">
-                      Our AI is crafting your perfect itinerary...
-                    </p>
-                    <p className="text-sm text-muted-foreground/70 mt-2">
-                      This may take a moment
-                    </p>
+                {/* Travel Style */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    Travel Style
+                  </Label>
+                  <Select
+                    value={formData.travelStyle}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, travelStyle: value })
+                    }
+                  >
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="Select your travel style" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {travelStyleOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Interests */}
+                <div className="space-y-2">
+                  <Label htmlFor="interests">Special Interests (Optional)</Label>
+                  <Input
+                    id="interests"
+                    placeholder="e.g., photography, hiking, museums, local cuisine"
+                    className="h-12"
+                    value={formData.interests}
+                    onChange={(e) =>
+                      setFormData({ ...formData, interests: e.target.value })
+                    }
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  variant="hero"
+                  className="w-full"
+                  size="xl"
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Generating Your Itinerary...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-5 h-5" />
+                      Generate My Trip Plan
+                    </>
+                  )}
+                </Button>
+              </form>
+            </div>
+
+            {/* Preview/Result */}
+            <div className="bg-card rounded-2xl shadow-card p-8 border border-border/50">
+              <h3 className="font-display text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+                <Plane className="w-5 h-5 text-primary" />
+                Your Itinerary Preview
+              </h3>
+
+              {isGenerating ? (
+                <div className="flex flex-col items-center justify-center py-20">
+                  <div className="w-16 h-16 rounded-full gradient-primary flex items-center justify-center mb-6 animate-pulse">
+                    <Sparkles className="w-8 h-8 text-primary-foreground" />
                   </div>
-                ) : generatedPlan ? (
-                  <div className="prose prose-sm max-w-none dark:prose-invert">
-                    <div className="whitespace-pre-wrap text-foreground/90 leading-relaxed">
-                      {generatedPlan}
-                    </div>
+                  <p className="text-muted-foreground text-center">
+                    Our AI is crafting your perfect itinerary...
+                  </p>
+                </div>
+              ) : generatedPlan ? (
+                <div className="prose prose-sm max-w-none">
+                  <div className="whitespace-pre-wrap text-foreground/90 leading-relaxed">
+                    {generatedPlan}
                   </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-20 text-center">
-                    <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mb-6">
-                      <MapPin className="w-10 h-10 text-muted-foreground" />
-                    </div>
-                    <p className="text-muted-foreground mb-2">
-                      Fill in the form and click "Generate" to see your AI-powered travel plan.
-                    </p>
-                    <p className="text-sm text-muted-foreground/70">
-                      Powered by advanced AI for personalized recommendations
-                    </p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mb-6">
+                    <MapPin className="w-10 h-10 text-muted-foreground" />
                   </div>
-                )}
-              </div>
+                  <p className="text-muted-foreground mb-2">
+                    Fill in the form and click "Generate" to see your personalized travel plan.
+                  </p>
+                  <p className="text-sm text-muted-foreground/70">
+                    You have 2 free credits to get started!
+                  </p>
+                </div>
+              )}
             </div>
           </div>
+        </div>
         </main>
 
         <Footer />
