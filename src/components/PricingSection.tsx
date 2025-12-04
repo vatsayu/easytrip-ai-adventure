@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 const plans = [
   {
     name: "Free Plan",
-    credits: "2 Credits",
+    credits: "3 Credits",
     price: "$0",
     originalPrice: "$10",
     description: "Free Forever. No subscription required.",
@@ -22,7 +22,7 @@ const plans = [
       "Invite Others (1 collaborator)",
       "Meta-searched Booking Links",
     ],
-    cta: "Try Now - 2 Free Credits",
+    cta: "Try Now - 3 Free Credits",
     popular: false,
     icon: Sparkles,
   },
