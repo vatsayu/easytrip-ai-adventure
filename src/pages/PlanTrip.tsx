@@ -86,52 +86,42 @@ const PlanTrip = () => {
     setIsGenerating(true);
     setGeneratedPlan(null);
 
-    // Simulate AI generation
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    try {
+      const response = await supabase.functions.invoke("generate-itinerary", {
+        body: {
+          destination: formData.destination,
+          startDate: formData.startDate,
+          endDate: formData.endDate,
+          travelers: formData.travelers,
+          budget: budgetOptions.find(b => b.value === formData.budget)?.label || "Flexible",
+          travelStyle: travelStyleOptions.find(s => s.value === formData.travelStyle)?.label || "Mixed",
+          interests: formData.interests,
+        },
+      });
 
-    const mockPlan = `
-# 🌍 Your ${formData.destination} Adventure
+      if (response.error) {
+        throw new Error(response.error.message || "Failed to generate itinerary");
+      }
 
-## Trip Overview
-- **Destination:** ${formData.destination}
-- **Duration:** ${calculateDays(formData.startDate, formData.endDate)} days
-- **Travelers:** ${formData.travelers} people
-- **Budget:** ${budgetOptions.find(b => b.value === formData.budget)?.label || 'Flexible'}
-- **Style:** ${travelStyleOptions.find(s => s.value === formData.travelStyle)?.label || 'Mixed'}
+      const data = response.data;
+      if (data.error) {
+        throw new Error(data.error);
+      }
 
----
-
-## Day 1: Arrival & Exploration
-- 🛬 Arrive at ${formData.destination}
-- 🏨 Check into your accommodation
-- 🚶 Evening walk to explore the neighborhood
-- 🍽️ Welcome dinner at a local restaurant
-
-## Day 2: Iconic Landmarks
-- 🌅 Early morning start
-- 📸 Visit top attractions
-- ☕ Coffee break at a scenic café
-- 🎭 Cultural experience in the afternoon
-- 🌙 Evening entertainment
-
-## Day 3: Hidden Gems
-- 🗺️ Off-the-beaten-path exploration
-- 🍜 Local food tour
-- 🛍️ Shopping at local markets
-- 🌆 Sunset viewpoint
-
----
-
-*This is a preview. Connect to our AI service for a complete personalized itinerary with booking links, maps, and real-time recommendations.*
-    `;
-
-    setGeneratedPlan(mockPlan);
-    setIsGenerating(false);
-
-    toast({
-      title: "Itinerary Generated!",
-      description: "Your personalized travel plan is ready. Click 'Save Trip' to keep it.",
-    });
+      setGeneratedPlan(data.itinerary);
+      toast({
+        title: "Itinerary Generated!",
+        description: "Your personalized travel plan is ready. Click 'Save Trip' to keep it.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Generation failed",
+        description: error.message || "Failed to generate itinerary. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const saveTrip = async () => {
