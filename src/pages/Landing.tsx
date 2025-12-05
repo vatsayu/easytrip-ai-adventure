@@ -1,0 +1,106 @@
+import { Link } from "react-router-dom";
+import { MapPin, Plane } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AnimatedPage } from "@/components/AnimatedPage";
+
+const Landing = () => {
+  return (
+    <AnimatedPage>
+      <div className="min-h-screen bg-background relative overflow-hidden">
+        {/* Header */}
+        <header className="flex items-center justify-between px-6 py-4 md:px-12">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-6 w-6 text-primary" />
+            <span className="text-lg font-bold">
+              Travel<br className="hidden" />
+              <span className="text-foreground">Planner</span>
+              <span className="text-primary">AI</span>
+            </span>
+          </div>
+          <Link to="/home">
+            <Button variant="outline" className="rounded-full px-6">
+              <span className="w-2 h-2 bg-primary rounded-full mr-2"></span>
+              EasyTrip
+            </Button>
+          </Link>
+        </header>
+
+        {/* Animated Dashed Arc */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <svg
+            viewBox="0 0 1200 600"
+            className="w-full max-w-5xl h-auto"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Dashed arc path */}
+            <path
+              d="M 100 500 Q 600 -100 1100 500"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeDasharray="20 15"
+              className="text-foreground/40"
+              fill="none"
+            />
+            {/* Animated plane */}
+            <g className="animate-fly">
+              <Plane className="text-primary" />
+            </g>
+          </svg>
+          
+          {/* Plane icon positioned on the arc */}
+          <div className="absolute right-[15%] top-[45%] md:right-[20%] md:top-[40%] animate-bounce">
+            <Plane className="h-8 w-8 text-primary transform rotate-45" />
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <main className="relative z-10 flex flex-col items-start justify-end min-h-[80vh] px-6 md:px-12 pb-20">
+          {/* Logo */}
+          <div className="flex items-center gap-3 mb-8">
+            <div className="relative">
+              <MapPin className="h-12 w-12 text-foreground" strokeWidth={1.5} />
+              <Plane className="h-5 w-5 text-foreground absolute -right-1 -bottom-1 transform -rotate-45" />
+            </div>
+            <div className="text-3xl md:text-4xl font-bold tracking-tight">
+              <span className="text-foreground">TRAVEL</span>
+              <br />
+              <span className="text-foreground">PLANNER </span>
+              <span className="text-primary">AI</span>
+            </div>
+          </div>
+
+          {/* Headline */}
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-light text-foreground mb-8 max-w-3xl">
+            Travel Planner AI is now{" "}
+            <span className="font-bold text-primary">EasyTrip</span>
+          </h1>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Link to="/home">
+              <Button 
+                size="lg" 
+                className="rounded-full px-8 py-6 text-lg bg-primary hover:bg-primary/90 group relative overflow-hidden"
+              >
+                <span className="relative z-10">Plan Smarter on EasyTrip</span>
+                <span className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 transform translate-x-full group-hover:translate-x-0 transition-transform duration-300"></span>
+              </Button>
+            </Link>
+            <Link to="/home">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="rounded-full px-8 py-6 text-lg border-2"
+              >
+                Plan Smarter on EasyTrip
+              </Button>
+            </Link>
+          </div>
+        </main>
+      </div>
+    </AnimatedPage>
+  );
+};
+
+export default Landing;

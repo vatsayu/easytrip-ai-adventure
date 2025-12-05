@@ -169,7 +169,7 @@ const Auth = () => {
       <div className="w-full max-w-md relative z-10">
         {/* Back Link */}
         <Link
-          to="/"
+          to="/home"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
