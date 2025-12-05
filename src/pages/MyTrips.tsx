@@ -263,10 +263,22 @@ const MyTrips = () => {
 
                       {selectedTrip.itinerary && (
                         <div className="prose prose-sm max-w-none">
+                          {/* Destination Image */}
+                          {selectedTrip.itinerary?.image && (
+                            <div className="mb-4 rounded-xl overflow-hidden">
+                              <img
+                                src={selectedTrip.itinerary.image}
+                                alt={`${selectedTrip.destination}`}
+                                className="w-full h-48 object-cover"
+                              />
+                            </div>
+                          )}
                           <h4 className="font-semibold text-foreground mb-2">Itinerary</h4>
                           <div className="whitespace-pre-wrap text-foreground/90 leading-relaxed bg-secondary/30 rounded-lg p-4 max-h-96 overflow-y-auto">
                             {typeof selectedTrip.itinerary === "string"
                               ? selectedTrip.itinerary
+                              : selectedTrip.itinerary?.text
+                              ? selectedTrip.itinerary.text
                               : JSON.stringify(selectedTrip.itinerary, null, 2)}
                           </div>
                         </div>
