@@ -18,9 +18,9 @@ const Landing = () => {
             }
           }
           .plane-on-path {
-            offset-path: path('M 100 500 Q 600 -100 1100 500');
-            offset-rotate: auto 90deg;
-            animation: flyAlongArc 8s ease-in-out infinite;
+            offset-path: path('M 100 800 Q 700 -200 1300 600');
+            offset-rotate: auto -45deg;
+            animation: flyAlongArc 6s ease-in-out infinite;
           }
         `}</style>
 
@@ -28,56 +28,58 @@ const Landing = () => {
         <header className="flex items-center justify-between px-6 py-4 md:px-12">
           <div className="flex items-center gap-2">
             <MapPin className="h-6 w-6 text-primary" />
-            <span className="text-lg font-bold">
-              Travel<br className="hidden" />
+            <div className="text-sm font-bold leading-tight">
+              <span className="text-foreground">Travel</span>
+              <br />
               <span className="text-foreground">Planner</span>
               <span className="text-primary">AI</span>
-            </span>
+            </div>
           </div>
           <Link to="/home">
-            <Button variant="outline" className="rounded-full px-6">
+            <Button variant="outline" className="rounded-full px-6 border-foreground/20">
               <span className="w-2 h-2 bg-primary rounded-full mr-2"></span>
               EasyTrip
             </Button>
           </Link>
         </header>
 
-        {/* Animated Dashed Arc */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        {/* Animated Dashed Arc - Full screen */}
+        <div className="absolute inset-0 pointer-events-none">
           <svg
-            viewBox="0 0 1200 600"
-            className="w-full max-w-5xl h-auto"
+            viewBox="0 0 1400 900"
+            className="w-full h-full"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
+            preserveAspectRatio="xMidYMid slice"
           >
-            {/* Dashed arc path */}
+            {/* Dashed arc path - starts from bottom left, arcs up and curves to right */}
             <path
               id="flightPath"
-              d="M 100 500 Q 600 -100 1100 500"
+              d="M 100 800 Q 700 -200 1300 600"
               stroke="currentColor"
               strokeWidth="3"
               strokeDasharray="20 15"
-              className="text-foreground/40"
+              className="text-foreground/30"
               fill="none"
             />
             {/* Animated plane following the path */}
             <g className="plane-on-path">
-              <svg x="-16" y="-16" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>
+              <svg x="-12" y="-12" width="24" height="24" viewBox="0 0 24 24" fill="hsl(var(--primary))" stroke="none">
+                <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
               </svg>
             </g>
           </svg>
         </div>
 
-        {/* Main Content */}
-        <main className="relative z-10 flex flex-col items-start justify-end min-h-[80vh] px-6 md:px-12 pb-20">
+        {/* Main Content - Bottom Left */}
+        <main className="absolute bottom-0 left-0 z-10 px-6 md:px-12 pb-16 md:pb-24">
           {/* Logo */}
-          <div className="flex items-center gap-3 mb-8">
+          <div className="flex items-center gap-3 mb-12">
             <div className="relative">
-              <MapPin className="h-12 w-12 text-foreground" strokeWidth={1.5} />
-              <Plane className="h-5 w-5 text-foreground absolute -right-1 -bottom-1 transform -rotate-45" />
+              <MapPin className="h-14 w-14 md:h-16 md:w-16 text-foreground" strokeWidth={1.5} />
+              <Plane className="h-5 w-5 md:h-6 md:w-6 text-foreground absolute -right-1 bottom-0 transform rotate-[-135deg]" />
             </div>
-            <div className="text-3xl md:text-4xl font-bold tracking-tight">
+            <div className="text-2xl md:text-3xl font-bold tracking-wider">
               <span className="text-foreground">TRAVEL</span>
               <br />
               <span className="text-foreground">PLANNER </span>
@@ -86,7 +88,7 @@ const Landing = () => {
           </div>
 
           {/* Headline */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-light text-foreground mb-8 max-w-3xl">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-light text-foreground mb-10 max-w-2xl leading-tight">
             Travel Planner AI is now{" "}
             <span className="font-bold text-primary">EasyTrip</span>
           </h1>
@@ -96,17 +98,16 @@ const Landing = () => {
             <Link to="/home">
               <Button 
                 size="lg" 
-                className="rounded-full px-8 py-6 text-lg bg-primary hover:bg-primary/90 group relative overflow-hidden"
+                className="rounded-full px-8 py-6 text-base md:text-lg bg-primary hover:bg-primary/90"
               >
-                <span className="relative z-10">Plan Smarter on EasyTrip</span>
-                <span className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 transform translate-x-full group-hover:translate-x-0 transition-transform duration-300"></span>
+                Plan Smarter on EasyTrip
               </Button>
             </Link>
             <Link to="/home">
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="rounded-full px-8 py-6 text-lg border-2"
+                className="rounded-full px-8 py-6 text-base md:text-lg border-2 border-foreground/20 hover:bg-foreground/5"
               >
                 Plan Smarter on EasyTrip
               </Button>
