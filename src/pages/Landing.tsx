@@ -18,9 +18,9 @@ const Landing = () => {
             }
           }
           .plane-on-path {
-            offset-path: path('M 100 800 Q 700 -200 1300 600');
-            offset-rotate: auto -45deg;
-            animation: flyAlongArc 6s ease-in-out infinite;
+            offset-path: path('M -50 950 Q 400 100 700 200 Q 1000 300 1450 850');
+            offset-rotate: auto;
+            animation: flyAlongArc 8s ease-in-out infinite;
           }
         `}</style>
 
@@ -44,7 +44,7 @@ const Landing = () => {
         </header>
 
         {/* Animated Dashed Arc - Full screen */}
-        <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <svg
             viewBox="0 0 1400 900"
             className="w-full h-full"
@@ -52,41 +52,42 @@ const Landing = () => {
             xmlns="http://www.w3.org/2000/svg"
             preserveAspectRatio="xMidYMid slice"
           >
-            {/* Dashed arc path - starts from bottom left, arcs up and curves to right */}
+            {/* Dashed arc path - starts from bottom left, curves up to top center, then down to bottom right */}
             <path
               id="flightPath"
-              d="M 100 800 Q 700 -200 1300 600"
+              d="M -50 950 Q 400 100 700 200 Q 1000 300 1450 850"
               stroke="currentColor"
-              strokeWidth="3"
-              strokeDasharray="20 15"
-              className="text-foreground/30"
+              strokeWidth="2"
+              strokeDasharray="12 10"
+              className="text-foreground/20"
               fill="none"
             />
             {/* Animated plane following the path */}
             <g className="plane-on-path">
-              <svg x="-12" y="-12" width="24" height="24" viewBox="0 0 24 24" fill="hsl(var(--primary))" stroke="none">
+              <svg x="-16" y="-16" width="32" height="32" viewBox="0 0 24 24" fill="hsl(var(--primary))" stroke="none">
                 <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
               </svg>
             </g>
           </svg>
         </div>
 
-        {/* Main Content - Bottom Left */}
-        <main className="absolute bottom-0 left-0 z-10 px-6 md:px-12 pb-16 md:pb-24">
-          {/* Logo */}
-          <div className="flex items-center gap-3 mb-12">
+        {/* Logo - Bottom Right */}
+        <div className="absolute bottom-16 right-6 md:bottom-24 md:right-12 z-10">
+          <div className="flex items-center gap-3">
             <div className="relative">
-              <MapPin className="h-14 w-14 md:h-16 md:w-16 text-foreground" strokeWidth={1.5} />
-              <Plane className="h-5 w-5 md:h-6 md:w-6 text-foreground absolute -right-1 bottom-0 transform rotate-[-135deg]" />
+              <MapPin className="h-12 w-12 md:h-14 md:w-14 text-foreground" strokeWidth={1.5} />
+              <Plane className="h-4 w-4 md:h-5 md:w-5 text-foreground absolute -right-1 bottom-0 transform rotate-[-135deg]" />
             </div>
-            <div className="text-2xl md:text-3xl font-bold tracking-wider">
+            <div className="text-xl md:text-2xl font-bold tracking-wider">
               <span className="text-foreground">TRAVEL</span>
               <br />
               <span className="text-foreground">PLANNER </span>
               <span className="text-primary">AI</span>
             </div>
           </div>
-
+        </div>
+        {/* Main Content - Bottom Left */}
+        <main className="absolute bottom-0 left-0 z-10 px-6 md:px-12 pb-16 md:pb-24">
           {/* Headline */}
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-light text-foreground mb-10 max-w-2xl leading-tight">
             Travel Planner AI is now{" "}
