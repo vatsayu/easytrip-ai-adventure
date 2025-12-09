@@ -1,28 +1,77 @@
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { MapPin, Plane, Globe, Compass, Map, Palmtree } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedPage } from "@/components/AnimatedPage";
 
 const Landing = () => {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 2;
+      const y = (e.clientY / window.innerHeight - 0.5) * 2;
+      setMousePosition({ x, y });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  const getParallaxStyle = (depth: number) => ({
+    transform: `translate(${mousePosition.x * depth}px, ${mousePosition.y * depth}px)`,
+    transition: 'transform 0.1s ease-out',
+  });
+
   return (
     <AnimatedPage>
       <div className="min-h-screen bg-background relative overflow-hidden flex flex-col">
         {/* Animated gradient orbs */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl" />
+          <div 
+            className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse" 
+            style={getParallaxStyle(15)}
+          />
+          <div 
+            className="absolute bottom-20 right-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" 
+            style={{ ...getParallaxStyle(20), animationDelay: '1s' }} 
+          />
+          <div 
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl" 
+            style={getParallaxStyle(10)}
+          />
         </div>
 
-        {/* Floating travel icons */}
+        {/* Floating travel icons with parallax */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <Plane className="absolute top-[15%] left-[10%] w-8 h-8 text-primary/20 animate-float" style={{ animationDelay: '0s' }} />
-          <Globe className="absolute top-[25%] right-[15%] w-10 h-10 text-primary/15 animate-float" style={{ animationDelay: '0.5s' }} />
-          <Compass className="absolute bottom-[30%] left-[20%] w-6 h-6 text-primary/20 animate-float" style={{ animationDelay: '1s' }} />
-          <Map className="absolute top-[60%] right-[10%] w-8 h-8 text-primary/15 animate-float" style={{ animationDelay: '1.5s' }} />
-          <Palmtree className="absolute bottom-[20%] left-[8%] w-10 h-10 text-primary/10 animate-float" style={{ animationDelay: '2s' }} />
-          <Plane className="absolute top-[40%] right-[25%] w-6 h-6 text-primary/10 animate-float rotate-45" style={{ animationDelay: '2.5s' }} />
-          <MapPin className="absolute bottom-[40%] right-[30%] w-7 h-7 text-primary/15 animate-float" style={{ animationDelay: '3s' }} />
+          <Plane 
+            className="absolute top-[15%] left-[10%] w-8 h-8 text-primary/20 animate-float" 
+            style={{ ...getParallaxStyle(30), animationDelay: '0s' }} 
+          />
+          <Globe 
+            className="absolute top-[25%] right-[15%] w-10 h-10 text-primary/15 animate-float" 
+            style={{ ...getParallaxStyle(25), animationDelay: '0.5s' }} 
+          />
+          <Compass 
+            className="absolute bottom-[30%] left-[20%] w-6 h-6 text-primary/20 animate-float" 
+            style={{ ...getParallaxStyle(35), animationDelay: '1s' }} 
+          />
+          <Map 
+            className="absolute top-[60%] right-[10%] w-8 h-8 text-primary/15 animate-float" 
+            style={{ ...getParallaxStyle(20), animationDelay: '1.5s' }} 
+          />
+          <Palmtree 
+            className="absolute bottom-[20%] left-[8%] w-10 h-10 text-primary/10 animate-float" 
+            style={{ ...getParallaxStyle(28), animationDelay: '2s' }} 
+          />
+          <Plane 
+            className="absolute top-[40%] right-[25%] w-6 h-6 text-primary/10 animate-float rotate-45" 
+            style={{ ...getParallaxStyle(40), animationDelay: '2.5s' }} 
+          />
+          <MapPin 
+            className="absolute bottom-[40%] right-[30%] w-7 h-7 text-primary/15 animate-float" 
+            style={{ ...getParallaxStyle(22), animationDelay: '3s' }} 
+          />
         </div>
 
         {/* Header */}
