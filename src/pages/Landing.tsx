@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { MapPin } from "lucide-react";
+import { MapPin, Plane, Globe, Compass, Map, Palmtree } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedPage } from "@/components/AnimatedPage";
 
@@ -7,8 +7,26 @@ const Landing = () => {
   return (
     <AnimatedPage>
       <div className="min-h-screen bg-background relative overflow-hidden flex flex-col">
+        {/* Animated gradient orbs */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl" />
+        </div>
+
+        {/* Floating travel icons */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <Plane className="absolute top-[15%] left-[10%] w-8 h-8 text-primary/20 animate-float" style={{ animationDelay: '0s' }} />
+          <Globe className="absolute top-[25%] right-[15%] w-10 h-10 text-primary/15 animate-float" style={{ animationDelay: '0.5s' }} />
+          <Compass className="absolute bottom-[30%] left-[20%] w-6 h-6 text-primary/20 animate-float" style={{ animationDelay: '1s' }} />
+          <Map className="absolute top-[60%] right-[10%] w-8 h-8 text-primary/15 animate-float" style={{ animationDelay: '1.5s' }} />
+          <Palmtree className="absolute bottom-[20%] left-[8%] w-10 h-10 text-primary/10 animate-float" style={{ animationDelay: '2s' }} />
+          <Plane className="absolute top-[40%] right-[25%] w-6 h-6 text-primary/10 animate-float rotate-45" style={{ animationDelay: '2.5s' }} />
+          <MapPin className="absolute bottom-[40%] right-[30%] w-7 h-7 text-primary/15 animate-float" style={{ animationDelay: '3s' }} />
+        </div>
+
         {/* Header */}
-        <header className="flex items-center justify-between px-6 py-4 md:px-12">
+        <header className="flex items-center justify-between px-6 py-4 md:px-12 z-10">
           <div className="flex items-center gap-2">
             <MapPin className="h-6 w-6 text-primary" />
             <div className="text-sm font-bold leading-tight">
@@ -25,26 +43,6 @@ const Landing = () => {
             </Button>
           </Link>
         </header>
-
-        {/* Dashed Arc - Static */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <svg
-            viewBox="0 0 1400 900"
-            className="w-full h-full"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            preserveAspectRatio="xMidYMid slice"
-          >
-            <path
-              d="M -50 950 Q 400 100 700 200 Q 1000 300 1450 850"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeDasharray="12 10"
-              className="text-foreground/20"
-              fill="none"
-            />
-          </svg>
-        </div>
 
         {/* Main Content - Centered */}
         <main className="flex-1 flex flex-col items-center justify-center z-10 px-6 text-center">
@@ -70,7 +68,7 @@ const Landing = () => {
                 size="lg" 
                 className="rounded-full px-8 py-6 text-base md:text-lg border-2 border-foreground/20 hover:bg-foreground/5"
               >
-                Plan Smarter on EasyTrip
+                Learn More
               </Button>
             </Link>
           </div>
