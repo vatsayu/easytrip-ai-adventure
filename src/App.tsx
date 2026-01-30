@@ -12,6 +12,7 @@ import Auth from "./pages/Auth";
 import PlanTrip from "./pages/PlanTrip";
 import MyTrips from "./pages/MyTrips";
 import NotFound from "./pages/NotFound";
+import { TripChatbot } from "@/components/TripChatbot";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <AnimatedRoutes />
+            <TripChatbot />
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
