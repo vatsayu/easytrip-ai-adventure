@@ -28,6 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AnimatedPage } from "@/components/AnimatedPage";
+import { ExploreMap } from "@/components/ExploreMap";
 
 const budgetOptions = [
   { value: "budget", label: "Budget-Friendly ($)", description: "Hostels, street food, public transport" },
@@ -228,6 +229,17 @@ const PlanTrip = () => {
               <Coins className="w-4 h-4 text-primary" />
               <span>Credits: {credits ?? 0}</span>
             </div>
+          </div>
+
+          {/* Interactive Map */}
+          <div className="max-w-6xl mx-auto mb-12">
+            <ExploreMap
+              onSelectDestination={(dest) => {
+                setFormData((prev) => ({ ...prev, destination: dest }));
+                toast({ title: "Destination selected", description: dest });
+                document.getElementById("destination")?.scrollIntoView({ behavior: "smooth", block: "center" });
+              }}
+            />
           </div>
 
           <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
