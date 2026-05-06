@@ -7,21 +7,24 @@ type Destination = {
   country: string;
   description: string;
   position: { lat: number; lng: number };
+  suggestedStyle: "adventure" | "cultural" | "relaxation" | "foodie" | "nightlife" | "family";
+  suggestedBudget: "budget" | "moderate" | "luxury";
+  suggestedInterests: string;
 };
 
 const POPULAR_DESTINATIONS: Destination[] = [
-  { name: "Paris", country: "France", description: "City of Lights — Eiffel Tower, Louvre, world-class cuisine.", position: { lat: 48.8566, lng: 2.3522 } },
-  { name: "Tokyo", country: "Japan", description: "Neon-lit streets, ancient temples, sushi & cherry blossoms.", position: { lat: 35.6762, lng: 139.6503 } },
-  { name: "New York", country: "USA", description: "The city that never sleeps — Times Square, Central Park.", position: { lat: 40.7128, lng: -74.006 } },
-  { name: "Bali", country: "Indonesia", description: "Tropical beaches, rice terraces, spiritual retreats.", position: { lat: -8.3405, lng: 115.092 } },
-  { name: "Rome", country: "Italy", description: "Colosseum, Vatican, pasta & 2000 years of history.", position: { lat: 41.9028, lng: 12.4964 } },
-  { name: "Dubai", country: "UAE", description: "Futuristic skyline, desert safaris, luxury shopping.", position: { lat: 25.2048, lng: 55.2708 } },
-  { name: "Sydney", country: "Australia", description: "Iconic Opera House, harbor views, golden beaches.", position: { lat: -33.8688, lng: 151.2093 } },
-  { name: "Cape Town", country: "South Africa", description: "Table Mountain, vineyards, dramatic coastlines.", position: { lat: -33.9249, lng: 18.4241 } },
-  { name: "Reykjavik", country: "Iceland", description: "Northern lights, geysers, glaciers & black sand beaches.", position: { lat: 64.1466, lng: -21.9426 } },
-  { name: "Rio de Janeiro", country: "Brazil", description: "Christ the Redeemer, Copacabana, vibrant carnival.", position: { lat: -22.9068, lng: -43.1729 } },
-  { name: "Bangkok", country: "Thailand", description: "Street food, ornate temples, bustling markets.", position: { lat: 13.7563, lng: 100.5018 } },
-  { name: "Marrakech", country: "Morocco", description: "Souks, palaces, riads & Sahara adventures.", position: { lat: 31.6295, lng: -7.9811 } },
+  { name: "Paris", country: "France", description: "City of Lights — Eiffel Tower, Louvre, world-class cuisine.", position: { lat: 48.8566, lng: 2.3522 }, suggestedStyle: "cultural", suggestedBudget: "moderate", suggestedInterests: "museums, architecture, French cuisine, wine tasting" },
+  { name: "Tokyo", country: "Japan", description: "Neon-lit streets, ancient temples, sushi & cherry blossoms.", position: { lat: 35.6762, lng: 139.6503 }, suggestedStyle: "cultural", suggestedBudget: "moderate", suggestedInterests: "sushi, anime, temples, technology, cherry blossoms" },
+  { name: "New York", country: "USA", description: "The city that never sleeps — Times Square, Central Park.", position: { lat: 40.7128, lng: -74.006 }, suggestedStyle: "nightlife", suggestedBudget: "moderate", suggestedInterests: "Broadway, museums, skyline, food tours" },
+  { name: "Bali", country: "Indonesia", description: "Tropical beaches, rice terraces, spiritual retreats.", position: { lat: -8.3405, lng: 115.092 }, suggestedStyle: "relaxation", suggestedBudget: "budget", suggestedInterests: "beaches, yoga, surfing, rice terraces, temples" },
+  { name: "Rome", country: "Italy", description: "Colosseum, Vatican, pasta & 2000 years of history.", position: { lat: 41.9028, lng: 12.4964 }, suggestedStyle: "cultural", suggestedBudget: "moderate", suggestedInterests: "ancient history, Italian food, art, gelato" },
+  { name: "Dubai", country: "UAE", description: "Futuristic skyline, desert safaris, luxury shopping.", position: { lat: 25.2048, lng: 55.2708 }, suggestedStyle: "relaxation", suggestedBudget: "luxury", suggestedInterests: "shopping, desert safari, skyscrapers, fine dining" },
+  { name: "Sydney", country: "Australia", description: "Iconic Opera House, harbor views, golden beaches.", position: { lat: -33.8688, lng: 151.2093 }, suggestedStyle: "adventure", suggestedBudget: "moderate", suggestedInterests: "beaches, Opera House, harbor cruise, Bondi" },
+  { name: "Cape Town", country: "South Africa", description: "Table Mountain, vineyards, dramatic coastlines.", position: { lat: -33.9249, lng: 18.4241 }, suggestedStyle: "adventure", suggestedBudget: "moderate", suggestedInterests: "Table Mountain, safari, wine, coastal hikes" },
+  { name: "Reykjavik", country: "Iceland", description: "Northern lights, geysers, glaciers & black sand beaches.", position: { lat: 64.1466, lng: -21.9426 }, suggestedStyle: "adventure", suggestedBudget: "luxury", suggestedInterests: "northern lights, glaciers, hot springs, hiking" },
+  { name: "Rio de Janeiro", country: "Brazil", description: "Christ the Redeemer, Copacabana, vibrant carnival.", position: { lat: -22.9068, lng: -43.1729 }, suggestedStyle: "nightlife", suggestedBudget: "moderate", suggestedInterests: "samba, beaches, Christ the Redeemer, carnival" },
+  { name: "Bangkok", country: "Thailand", description: "Street food, ornate temples, bustling markets.", position: { lat: 13.7563, lng: 100.5018 }, suggestedStyle: "foodie", suggestedBudget: "budget", suggestedInterests: "street food, temples, markets, Thai massage" },
+  { name: "Marrakech", country: "Morocco", description: "Souks, palaces, riads & Sahara adventures.", position: { lat: 31.6295, lng: -7.9811 }, suggestedStyle: "cultural", suggestedBudget: "budget", suggestedInterests: "souks, riads, Sahara, Moroccan cuisine" },
 ];
 
 let mapsScriptPromise: Promise<void> | null = null;
@@ -44,7 +47,14 @@ const loadGoogleMaps = (apiKey: string): Promise<void> => {
 };
 
 interface ExploreMapProps {
-  onSelectDestination?: (destination: string) => void;
+  onSelectDestination?: (destination: {
+    name: string;
+    country: string;
+    description: string;
+    suggestedStyle: string;
+    suggestedBudget: string;
+    suggestedInterests: string;
+  }) => void;
 }
 
 export const ExploreMap = ({ onSelectDestination }: ExploreMapProps) => {
@@ -155,7 +165,14 @@ export const ExploreMap = ({ onSelectDestination }: ExploreMapProps) => {
           </div>
           {onSelectDestination && (
             <button
-              onClick={() => onSelectDestination(`${selected.name}, ${selected.country}`)}
+              onClick={() => onSelectDestination({
+                name: selected.name,
+                country: selected.country,
+                description: selected.description,
+                suggestedStyle: selected.suggestedStyle,
+                suggestedBudget: selected.suggestedBudget,
+                suggestedInterests: selected.suggestedInterests,
+              })}
               className="shrink-0 text-xs font-medium px-3 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               Plan trip here
