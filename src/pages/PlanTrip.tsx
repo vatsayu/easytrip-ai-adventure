@@ -235,8 +235,23 @@ const PlanTrip = () => {
           <div className="max-w-6xl mx-auto mb-12">
             <ExploreMap
               onSelectDestination={(dest) => {
-                setFormData((prev) => ({ ...prev, destination: dest }));
-                toast({ title: "Destination selected", description: dest });
+                const fullName = `${dest.name}, ${dest.country}`;
+                setFormData((prev) => ({
+                  ...prev,
+                  destination: fullName,
+                  budget: prev.budget || dest.suggestedBudget,
+                  travelStyle: prev.travelStyle || dest.suggestedStyle,
+                  interests: prev.interests
+                    ? prev.interests
+                    : dest.suggestedInterests,
+                }));
+                // Reset any prior generated plan so downstream UI re-syncs
+                setGeneratedPlan(null);
+                setDestinationImage(null);
+                toast({
+                  title: `Destination set: ${dest.name}`,
+                  description: "We pre-filled travel style, budget & interests — tweak them or generate now.",
+                });
                 document.getElementById("destination")?.scrollIntoView({ behavior: "smooth", block: "center" });
               }}
             />
